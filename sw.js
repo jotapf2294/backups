@@ -1,5 +1,12 @@
-const CACHE_NAME = 'quinta-cache-v1';
-const ASSETS = ['./', './index.html', './style.css', './db.js', './wiki.js', './app.js', 'https://unpkg.com/dexie/dist/dexie.js'];
+const CACHE_NAME = 'quinta-pro-v2';
+const ASSETS = [
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
+    './db.js',
+    'https://unpkg.com/dexie/dist/dexie.js'
+];
 
 self.addEventListener('install', e => {
     e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));

@@ -6,7 +6,7 @@ function irPara(pg, el) {
     el.classList.add('active');
     if(pg === 'horta') renderPlantas();
     if(pg === 'calendario') renderCalendario();
-    if(pg === 'wiki') renderWiki();
+    if(pg === 'notas') renderWiki();
     if(pg === 'config') renderZonas();
 }
 

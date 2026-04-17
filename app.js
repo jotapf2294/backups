@@ -82,8 +82,54 @@ function filtrarTudo() {
     });
 }
 
-function carregarWiki() {
-    document.getElementById('wiki-render').innerHTML = Object.keys(WIKI).map(k => `
-        <div class="card"><h3>${k}</h3><p>${WIKI[k].dicas}</p></div>
-    `).join('');
-      }
+// --- Lógica da Wiki Dinâmica ---
+
+async function addWiki() {
+    const titulo = document.getElementById('w-titulo').value;
+    const texto = document.getElementById('w-texto').value;
+
+    if (!titulo || !texto) return alert("Preenche o título e a descrição!");
+
+    await db.wiki.add({ titulo, texto });
+    
+    // Limpar campos
+    document.getElementById('w-titulo').value = '';
+    document.getElementById('w-texto').value = '';
+    
+    carregarWiki(); // Atualizar a lista
+}
+
+async function carregarWiki() {
+    const itens = await db.wiki.toArray();
+    const render = document.getElementById('wiki-render');
+    
+    if (itens.length === 0) {
+        render.innerHTML = "<p style='text-align:center; color:#888;'>A tua wiki está vazia. Adiciona o teu primeiro truque acima!</p>";
+        return;
+    }
+
+    render.innerHTML = itens.map(item => `
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <h3 style="margin:0; color:var(--p);">${item.titulo}</h3>
+                <button onclick="removerWiki(${item.id})" style="background:none; border:none; color:red; cursor:pointer;">🗑️</button>
+            </div>
+            <p style="margin-top:10px; white-space: pre-wrap;">${item.texto}</p>
+        </div>
+    `).reverse().join(''); // .reverse() para mostrar a mais recente primeiro
+}
+
+async function removerWiki(id) {
+    if (confirm("Tens a certeza que queres apagar esta dica?")) {
+        await db.wiki.delete(id);
+        carregarWiki();
+    }
+}
+
+// Atualiza a função sugerirWiki se ainda a usares
+function sugerirWiki() {
+    const tipo = document.getElementById('p-tipo').value;
+    if (WIKI_DEFAULTS[tipo]) {
+        document.getElementById('p-nome').value = tipo;
+    }
+}

@@ -1,154 +1,197 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horta Master Offline</title>
+    <title>Horta Pro Max</title>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <style>
-        :root { --p: #1b5e20; --s: #c8e6c9; --accent: #ff9800; --white: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; padding-bottom: 70px; }
+        :root { --p: #2e7d32; --s: #f1f8e9; --danger: #c62828; --grey: #607d8b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #fafafa; margin: 0; padding-bottom: 90px; color: #2c3e50; }
         
-        /* Navegação */
-        .navbar { position: fixed; bottom: 0; width: 100%; background: var(--p); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
-        .nav-item { color: white; text-decoration: none; font-size: 0.8em; text-align: center; cursor: pointer; }
+        /* Barra de Pesquisa Fixa */
+        .search-container { position: sticky; top: 0; background: white; padding: 10px 15px; z-index: 500; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .search-bar { width: 100%; padding: 10px 40px 10px 15px; border: 2px solid var(--s); border-radius: 25px; box-sizing: border-box; font-size: 16px; outline: none; }
+        .search-bar:focus { border-color: var(--p); }
 
-        .page { display: none; padding: 15px; max-width: 600px; margin: auto; }
-        .active { display: block; }
+        /* Navegação Inferior */
+        .navbar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 10px 0; border-top: 1px solid #ddd; z-index: 1000; }
+        .nav-btn { flex: 1; border: none; background: none; text-align: center; color: #95a5a6; cursor: pointer; font-size: 0.8em; }
+        .nav-btn.active { color: var(--p); font-weight: bold; }
 
-        /* Cards e Fotos */
-        .card { background: var(--white); border-radius: 15px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .img-container { width: 100%; height: 200px; background: #ddd; position: relative; overflow: hidden; }
-        .img-container img { width: 100%; height: 100%; object-fit: cover; }
-        .card-content { padding: 15px; }
+        .page { display: none; padding: 15px; max-width: 650px; margin: auto; }
+        .active-page { display: block; }
+
+        /* Cards Estilizados */
+        .card { background: white; border-radius: 20px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
+        .img-header { width: 100%; height: 160px; background: #e0e0e0; object-fit: cover; }
+        .card-body { padding: 20px; }
         
-        /* Inputs */
-        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { background: var(--p); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; }
-        
-        /* Dicas */
-        .tip-card { background: #fffde7; border-left: 5px solid var(--accent); padding: 15px; margin-bottom: 10px; border-radius: 5px; }
-        .badge { background: var(--s); padding: 4px 8px; border-radius: 5px; font-size: 0.7em; font-weight: bold; }
+        /* Badges e Infos */
+        .badge-idade { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.75em; }
+        .status-tag { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 0.7em; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+        .status-germinar { background: #fff3e0; color: #ef6c00; }
+        .status-crescer { background: #e8f5e9; color: #2e7d32; }
+        .status-colher { background: #fbe9e7; color: #d84315; }
+
+        /* Botões e Inputs */
+        .input-group { background: var(--s); padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #dcdde1; border-radius: 10px; box-sizing: border-box; }
+        .btn-main { background: var(--p); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        .btn-rega { background: #3498db; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-weight: bold; }
+        .btn-del { color: var(--danger); background: none; border: none; font-size: 0.8em; cursor: pointer; float: right; }
     </style>
 </head>
 <body>
 
-    <div id="horta" class="page active">
-        <h1>🌿 Minha Horta</h1>
-        <div class="card" style="padding: 15px;">
-            <strong>Novo Plantio</strong>
-            <input type="text" id="nome" placeholder="Ex: Alecrim">
-            <input type="file" id="foto" accept="image/*" capture="environment">
-            <textarea id="notas" placeholder="Anotações de cultivo..."></textarea>
-            <button class="btn" onclick="salvarPlanta()">Adicionar Planta</button>
-        </div>
-        <div id="listaPlantas"></div>
+    <div class="search-container">
+        <input type="text" id="globalSearch" class="search-bar" placeholder="🔎 Pesquisar plantas ou dicas..." onkeyup="filtrarTudo()">
     </div>
 
-    <div id="dicas" class="page">
-        <h1>💡 Truques & Dicas</h1>
-        
-        <div class="tip-card">
-            <strong>🍂 Fertilizante Natural (Casca de Ovo)</strong>
-            <p>Triture cascas de ovo secas e misture na terra. É uma fonte rica em cálcio!</p>
+    <div id="page-horta" class="page active-page">
+        <h2>🌱 O Meu Jardim</h2>
+        <div class="input-group">
+            <strong>Adicionar Planta</strong>
+            <input type="text" id="p-nome" placeholder="Nome da Planta">
+            <select id="p-status">
+                <option value="Germinar">🌱 Germinação</option>
+                <option value="Crescer" selected>🌿 Crescimento</option>
+                <option value="Colher">🧺 Colheita</option>
+            </select>
+            <input type="date" id="p-data" title="Data de Plantio">
+            <input type="file" id="p-foto" accept="image/*" capture="environment">
+            <textarea id="p-notas" placeholder="Anotações extras..."></textarea>
+            <button class="btn-main" onclick="addPlanta()">Registar</button>
         </div>
+        <div id="lista-plantas"></div>
+    </div>
 
-        <div class="tip-card">
-            <strong>🚿 Hora de Regar</strong>
-            <p>Evite regar as folhas ao meio-dia. O sol pode queimar as plantas através das gotas de água.</p>
+    <div id="page-dicas" class="page">
+        <h2>💡 Wiki & Truques</h2>
+        <div class="input-group">
+            <strong>Novo Truque</strong>
+            <input type="text" id="d-titulo" placeholder="Título">
+            <textarea id="d-texto" placeholder="Conteúdo da dica..."></textarea>
+            <button class="btn-main" onclick="addDica()">Guardar na Wiki</button>
         </div>
-
-        <div class="tip-card">
-            <strong>🐜 Adeus Formigas</strong>
-            <p>Espalhe borra de café ao redor dos vasos para repelir formigas e caracóis.</p>
-        </div>
-
-        <div class="tip-card" style="background: #e3f2fd; border-left-color: #2196f3;">
-            <strong>📅 Rotação de Cultivos</strong>
-            <p>Nunca plante a mesma espécie no mesmo vaso duas vezes seguidas para evitar pragas no solo.</p>
-        </div>
+        <div id="lista-dicas"></div>
     </div>
 
     <nav class="navbar">
-        <div class="nav-item" onclick="showPage('horta')">🌿<br>Horta</div>
-        <div class="nav-item" onclick="showPage('dicas')">💡<br>Dicas</div>
+        <button class="nav-btn active" id="nav-horta" onclick="irPara('horta')">🌿<br>Plantas</button>
+        <button class="nav-btn" id="nav-dicas" onclick="irPara('dicas')">💡<br>Dicas</button>
     </nav>
 
 <script>
-    // 1. BANCO DE DADOS (Agora inclui campo para imagem)
-    const db = new Dexie("HortaMasterDB");
-    db.version(2).stores({
-        plantas: '++id, nome, notas, foto, ultimaRega'
+    // BANCO DE DADOS
+    const db = new Dexie("HortaFinalDB");
+    db.version(1).stores({
+        plantas: '++id, nome, status, data, notas, foto, ultimaRega',
+        dicas: '++id, titulo, texto'
     });
 
-    // 2. NAVEGAÇÃO ENTRE PÁGINAS
-    function showPage(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+    // NAVEGAÇÃO
+    function irPara(pg) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('page-'+pg).classList.add('active-page');
+        document.getElementById('nav-'+pg).classList.add('active');
+        document.getElementById('globalSearch').value = ""; // Limpa pesquisa ao trocar aba
+        filtrarTudo();
     }
 
-    // 3. SALVAR PLANTA COM FOTO
-    async function salvarPlanta() {
-        const nome = document.getElementById('nome').value;
-        const notas = document.getElementById('notas').value;
-        const fotoInput = document.getElementById('foto');
-        
-        if(!nome) return alert("Nome obrigatório!");
+    // CALCULAR IDADE
+    function calcularIdade(dataPlantio) {
+        if(!dataPlantio) return "Data desconhecida";
+        const hoje = new Date();
+        const plantio = new Date(dataPlantio);
+        const diff = Math.floor((hoje - plantio) / (1000 * 60 * 60 * 24));
+        return diff < 0 ? "Futuro" : diff === 0 ? "Plantada hoje" : diff + " dias de vida";
+    }
 
-        let fotoBlob = null;
-        if(fotoInput.files[0]) {
-            fotoBlob = fotoInput.files[0]; // Salva o arquivo real no IndexedDB
-        }
+    // PESQUISA / FILTRO
+    function filtrarTudo() {
+        const termo = document.getElementById('globalSearch').value.toLowerCase();
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            const texto = card.innerText.toLowerCase();
+            card.style.display = texto.includes(termo) ? "block" : "none";
+        });
+    }
+
+    // LÓGICA PLANTAS
+    async function addPlanta() {
+        const nome = document.getElementById('p-nome').value;
+        const data = document.getElementById('p-data').value || new Date().toISOString().split('T')[0];
+        if(!nome) return alert("Nome é obrigatório");
 
         await db.plantas.add({
-            nome: nome,
-            notas: notas,
-            foto: fotoBlob,
+            nome,
+            status: document.getElementById('p-status').value,
+            data,
+            notas: document.getElementById('p-notas').value,
+            foto: document.getElementById('p-foto').files[0] || null,
             ultimaRega: new Date().toLocaleDateString('pt-PT')
         });
-
-        alert("Planta guardada com sucesso!");
-        document.getElementById('nome').value = "";
-        document.getElementById('notas').value = "";
-        document.getElementById('foto').value = "";
-        carregarHorta();
+        location.reload();
     }
 
-    // 4. CARREGAR HORTA COM IMAGENS
-    async function carregarHorta() {
-        const lista = document.getElementById('listaPlantas');
+    async function renderHorta() {
         const plantas = await db.plantas.toArray();
+        const container = document.getElementById('lista-plantas');
         
-        lista.innerHTML = plantas.map(p => {
-            let imgUrl = "https://via.placeholder.com/400x200?text=Sem+Foto";
-            if(p.foto) {
-                imgUrl = URL.createObjectURL(p.foto);
-            }
-
-            return `
-                <div class="card">
-                    <div class="img-container">
-                        <img src="${imgUrl}">
-                    </div>
-                    <div class="card-content">
-                        <strong>${p.nome}</strong> <span class="badge">Ativo</span>
-                        <p style="font-size: 0.8em; color: #666;">${p.notas}</p>
-                        <hr>
-                        <small>Última rega: ${p.ultimaRega}</small>
-                        <button class="btn" onclick="regar(${p.id})" style="margin-top:10px; background: #2196f3;">💧 Marcar Rega</button>
-                    </div>
+        container.innerHTML = plantas.map(p => `
+            <div class="card">
+                <span class="badge-idade">${calcularIdade(p.data)}</span>
+                ${p.foto ? `<img src="${URL.createObjectURL(p.foto)}" class="img-header">` : `<div class="img-header" style="background:#ddd; display:flex; align-items:center; justify-content:center">Sem Foto</div>`}
+                <div class="card-body">
+                    <button class="btn-del" onclick="apagar('plantas', ${p.id})">🗑️ Apagar</button>
+                    <span class="status-tag status-${p.status.toLowerCase()}">${p.status}</span>
+                    <h3 style="margin:5px 0">${p.nome}</h3>
+                    <p style="font-size:0.85em; color:#7f8c8d">${p.notas || ''}</p>
+                    <small>💧 Última rega: ${p.ultimaRega}</small>
+                    <button class="btn-rega" onclick="regar(${p.id})">MARCAR REGA</button>
                 </div>
-            `;
-        }).reverse().join('');
+            </div>
+        `).reverse().join('');
+    }
+
+    // LÓGICA DICAS
+    async function addDica() {
+        const titulo = document.getElementById('d-titulo').value;
+        const texto = document.getElementById('d-texto').value;
+        if(!titulo || !texto) return alert("Preencha título e texto");
+        await db.dicas.add({titulo, texto});
+        document.getElementById('d-titulo').value = "";
+        document.getElementById('d-texto').value = "";
+        renderDicas();
+    }
+
+    async function renderDicas() {
+        const dicas = await db.dicas.toArray();
+        const container = document.getElementById('lista-dicas');
+        container.innerHTML = dicas.map(d => `
+            <div class="card card-body">
+                <button class="btn-del" onclick="apagar('dicas', ${d.id})">🗑️</button>
+                <h4 style="margin:0 0 10px 0; color:var(--p)">💡 ${d.titulo}</h4>
+                <p style="font-size:0.9em; margin:0">${d.texto}</p>
+            </div>
+        `).reverse().join('');
     }
 
     async function regar(id) {
         await db.plantas.update(id, { ultimaRega: new Date().toLocaleDateString('pt-PT') });
-        carregarHorta();
+        renderHorta();
     }
 
-    // Iniciar
-    db.open().then(carregarHorta);
+    async function apagar(tab, id) {
+        if(confirm("Deseja eliminar este item?")) {
+            await db[tab].delete(id);
+            tab === 'plantas' ? renderHorta() : renderDicas();
+        }
+    }
+
+    db.open().then(() => { renderHorta(); renderDicas(); });
 </script>
 </body>
 </html>

@@ -3,92 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Horta Offline</title>
+    <title>Horta Inteligente</title>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <style>
-        :root {
-            --primary: #2e7d32;
-            --accent: #8bc34a;
-            --bg: #f1f8e9;
-        }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        h1 { color: var(--primary); text-align: center; }
-        .card { 
-            background: white; padding: 15px; border-radius: 12px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px;
-        }
-        input, button { 
-            width: 100%; padding: 12px; margin: 8px 0; 
-            border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;
-        }
-        button { 
-            background: var(--primary); color: white; border: none; 
-            font-weight: bold; cursor: pointer; 
-        }
-        button.rega-btn { background: var(--accent); margin-top: 10px; }
-        .planta-item { display: flex; justify-content: space-between; align-items: center; }
-        .info { flex-grow: 1; }
+        :root { --p: #2e7d32; --s: #edf7ed; --t: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f0; color: var(--t); margin: 0; padding: 15px; }
+        .container { max-width: 500px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h1 { text-align: center; color: var(--p); }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; display: block; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-add { background: var(--p); color: white; }
+        .btn-rega { background: #2196f3; color: white; margin-top: 10px; width: auto; padding: 8px 15px; }
+        .btn-delete { background: #ff5252; color: white; width: auto; float: right; padding: 5px 10px; font-size: 12px; }
+        .planta-card { border-left: 5px solid var(--p); }
+        .notas-txt { background: var(--s); padding: 10px; border-radius: 5px; font-size: 0.9em; margin-top: 10px; white-space: pre-wrap; }
+        .data { font-size: 0.8em; color: #666; }
     </style>
 </head>
 <body>
 
+<div class="container">
     <h1>🌿 Minha Horta</h1>
 
     <div class="card">
-        <h3>Nova Planta</h3>
-        <input type="text" id="nomePlanta" placeholder="Ex: Manjericão">
-        <button onclick="adicionarPlanta()">Adicionar à Horta</button>
+        <strong>Nova Planta</strong>
+        <input type="text" id="nome" placeholder="Nome (ex: Tomateiro)">
+        <textarea id="notas" placeholder="Anotações (ex: Solo rico em matéria orgânica, pegar sol da manhã)"></textarea>
+        <button class="btn-add" onclick="salvar()">Adicionar Planta</button>
     </div>
 
-    <div id="listaPlantas"></div>
+    <div id="lista"></div>
+</div>
 
-    <script>
-        // 1. Configurar o Banco de Dados
-        const db = new Dexie("HortaDB");
-        db.version(1).stores({
-            plantas: '++id, nome, ultimaRega'
-        });
+<script>
+    // Configuração do Banco de Dados
+    const db = new Dexie("HortaLocalDB");
+    db.version(1).stores({
+        plantas: '++id, nome, notas, ultimaRega'
+    });
 
-        // 2. Função para Adicionar Planta
-        async function adicionarPlanta() {
-            const nomeInput = document.getElementById('nomePlanta');
-            if (!nomeInput.value) return alert("Digite um nome!");
+    // Abrir o banco e carregar dados
+    db.open().then(carregarPlantas).catch(err => {
+        console.error("Erro ao abrir banco: " + err);
+        alert("Erro ao iniciar banco de dados. Tente usar um servidor local (Live Server).");
+    });
 
+    async function salvar() {
+        const nome = document.getElementById('nome').value;
+        const notas = document.getElementById('notas').value;
+
+        if(!nome) return alert("Dê um nome à planta!");
+
+        try {
             await db.plantas.add({
-                nome: nomeInput.value,
-                ultimaRega: new Date().toLocaleString()
+                nome: nome,
+                notas: notas,
+                ultimaRega: new Date().toLocaleString('pt-PT')
             });
-
-            nomeInput.value = "";
-            renderizarPlantas();
+            document.getElementById('nome').value = '';
+            document.getElementById('notas').value = '';
+            carregarPlantas();
+        } catch (e) {
+            alert("Erro ao salvar: " + e);
         }
+    }
 
-        // 3. Função para Atualizar Rega
-        async function regarPlanta(id) {
-            await db.plantas.update(id, { ultimaRega: new Date().toLocaleString() });
-            renderizarPlantas();
+    async function carregarPlantas() {
+        const listaDiv = document.getElementById('lista');
+        const todas = await db.plantas.toArray();
+        
+        listaDiv.innerHTML = todas.map(p => `
+            <div class="card planta-card">
+                <button class="btn-delete" onclick="apagar(${p.id})">Remover</button>
+                <strong>${p.nome}</strong>
+                <div class="data">Última rega: ${p.ultimaRega}</div>
+                ${p.notas ? `<div class="notas-txt"><strong>Notas:</strong><br>${p.notas}</div>` : ''}
+                <button class="btn-rega" onclick="regar(${p.id})">💧 Marcar Rega</button>
+            </div>
+        `).reverse().join('');
+    }
+
+    async function regar(id) {
+        await db.plantas.update(id, { ultimaRega: new Date().toLocaleString('pt-PT') });
+        carregarPlantas();
+    }
+
+    async function apagar(id) {
+        if(confirm("Deseja remover esta planta?")) {
+            await db.plantas.delete(id);
+            carregarPlantas();
         }
-
-        // 4. Função para Listar Plantas
-        async function renderizarPlantas() {
-            const listaDiv = document.getElementById('listaPlantas');
-            const plantas = await db.plantas.toArray();
-            
-            listaDiv.innerHTML = plantas.map(p => `
-                <div class="card">
-                    <div class="planta-item">
-                        <div class="info">
-                            <strong>${p.nome}</strong><br>
-                            <small>Última rega: ${p.ultimaRega}</small>
-                        </div>
-                        <button class="rega-btn" onclick="regarPlanta(${p.id})" style="width: auto;">💧 Regar</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Inicializar a lista ao abrir
-        renderizarPlantas();
-    </script>
+    }
+</script>
 </body>
 </html>

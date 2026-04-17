@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Quinta Pro</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -14,82 +15,88 @@
 
 <main>
     <section id="page-horta" class="page active">
-        <div class="header-section">
+        <div class="flex-header">
             <h2>🌿 Minhas Plantas</h2>
-            <button class="btn-main" onclick="abrirModal()">+ Novo Plantio</button>
+            <button class="btn-main" onclick="abrirModal('modal-planta')">+ Plantar</button>
         </div>
         <div id="lista-plantas"></div>
     </section>
 
     <section id="page-calendario" class="page">
-        <h2>📅 Colheitas Previstas</h2>
+        <h2>📅 Previsão de Colheita</h2>
         <div id="calendario-render"></div>
     </section>
 
     <section id="page-wiki" class="page">
-    <h2>📖 Notas</h2>
-    
-    <div class="card" style="border-left: 5px solid var(--a);">
-        <h3>➕ Nova Ficha/Truque</h3>
-        <input type="text" id="w-titulo" placeholder="Título (ex: Como podar Tomate)">
-        <textarea id="w-texto" placeholder="Escreve aqui o teu truque ou dica..."></textarea>
-        <button class="btn-main" onclick="addWiki()">Guardar na Wiki</button>
-    </div>
+        <div class="flex-header">
+            <h2>📖 Minha Wiki</h2>
+            <button class="btn-main" onclick="abrirModal('modal-wiki')">+ Dica</button>
+        </div>
         <div id="wiki-render"></div>
     </section>
-    
+
     <section id="page-config" class="page">
-        <h2>⚙️ Definições</h2>
+        <h2>⚙️ Configurações</h2>
         <div class="card">
-            <h3>Zonas</h3>
-            <input type="text" id="z-nome" placeholder="Nome da Zona">
-            <button class="btn-main" onclick="addZona()">Criar Zona</button>
-            <div id="lista-zonas"></div>
+            <h3>🏡 Gerir Zonas</h3>
+            <div class="flex">
+                <input type="text" id="z-nome" placeholder="Ex: Estufa, Varanda...">
+                <button class="btn-main" onclick="addZona()">Criar</button>
+            </div>
+            <div id="lista-zonas" style="margin-top:15px"></div>
         </div>
         <div class="card">
-            <h3>Backup</h3>
-            <button class="btn-secondary" onclick="exportarBackup()">Exportar Dados (.json)</button>
+            <h3>💾 Segurança</h3>
+            <button class="btn-secondary" onclick="exportarBackup()">Exportar Backup (.json)</button>
             <input type="file" id="importFile" accept=".json" onchange="importarBackup(event)" style="display:none">
-            <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Importar Dados</button>
+            <button class="btn-secondary" onclick="document.getElementById('importFile').click()" style="margin-top:10px">Importar Backup</button>
         </div>
     </section>
 </main>
 
 <nav class="bottom-nav">
-    <button class="nav-item active" onclick="irPara('horta')">🌿<span>Horta</span></button>
-    <button class="nav-item" onclick="irPara('calendario')">📅<span>Colheita</span></button>
-    <button class="nav-item" onclick="irPara('wiki')">📖<span>Wiki</span></button>
-    <button class="nav-item" onclick="irPara('config')">⚙️<span>Config</span></button>
+    <button class="nav-item active" onclick="irPara('horta', this)">🌿<span>Horta</span></button>
+    <button class="nav-item" onclick="irPara('calendario', this)">📅<span>Colheita</span></button>
+    <button class="nav-item" onclick="irPara('wiki', this)">📖<span>Wiki</span></button>
+    <button class="nav-item" onclick="irPara('config', this)">⚙️<span>Ajustes</span></button>
 </nav>
 
-<div id="modal" class="modal">
+<div id="modal-planta" class="modal">
     <div class="modal-content">
-        <h3>🌱 Registar Planta</h3>
-        <select id="p-tipo" onchange="sugerirWiki()">
-            <option value="">Escolha a espécie...</option>
-            <option value="Tomate">Tomate</option>
-            <option value="Alface">Alface</option>
-            <option value="Cebola">Cebola</option>
-            <option value="Cenoura">Cenoura</option>
-        </select>
-        <input type="text" id="p-nome" placeholder="Variedade">
+        <h3>🌱 Novo Plantio</h3>
+        <input type="text" id="p-nome" placeholder="Nome da Planta">
         <select id="p-zona-id"></select>
-        <input type="date" id="p-data">
-        <textarea id="p-notas" placeholder="Notas..."></textarea>
+        <input type="date" id="p-data" title="Data de Plantio">
+        <input type="number" id="p-ciclo" placeholder="Dias até colher (ex: 90)">
+        <input type="file" id="p-foto" accept="image/*" capture="environment">
+        <textarea id="p-notas" placeholder="Anotações..."></textarea>
         <div class="flex">
-            <button onclick="fecharModal()">Cancelar</button>
+            <button class="btn-cancel" onclick="fecharModal('modal-planta')">Cancelar</button>
             <button class="btn-main" onclick="salvarPlanta()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-wiki" class="modal">
+    <div class="modal-content">
+        <h3>💡 Adicionar Dica</h3>
+        <input type="text" id="w-titulo" placeholder="Título do Truque">
+        <textarea id="w-texto" placeholder="Explicação detalhada..."></textarea>
+        <div class="flex">
+            <button class="btn-cancel" onclick="fecharModal('modal-wiki')">Cancelar</button>
+            <button class="btn-main" onclick="salvarWiki()">Guardar</button>
         </div>
     </div>
 </div>
 
 <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 <script src="db.js"></script>
-<script src="wiki.js"></script>
 <script src="app.js"></script>
 <script>
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js');
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js');
+        });
     }
 </script>
 </body>

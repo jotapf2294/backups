@@ -4,7 +4,7 @@ const db = new Dexie("QuintaProDB");
 db.version(1).stores({
     zonas: '++id, nome',
     plantas: '++id, zonaId, nome, tipo, data, ciclo, notas, foto',
-    wiki: '++id, titulo, texto'
+    notas: '++id, titulo, texto'
 });
 
 db.open().catch(err => {

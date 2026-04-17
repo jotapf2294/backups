@@ -1,6 +1,12 @@
-const db = new Dexie("QuintaDB");
-db.version(2).stores({ // Aumentamos a versão para 2
+// Configuração do Banco de Dados Dexie
+const db = new Dexie("QuintaProDB");
+
+db.version(1).stores({
     zonas: '++id, nome',
-    plantas: '++id, zonaId, tipo, nome, data, ciclo, notas',
-    wiki: '++id, titulo, texto' // Nova tabela para a tua Wiki personalizada
+    plantas: '++id, zonaId, nome, tipo, data, ciclo, notas, foto',
+    wiki: '++id, titulo, texto'
+});
+
+db.open().catch(err => {
+    console.error("Erro ao abrir banco: " + err);
 });

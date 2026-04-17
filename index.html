@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Horta Offline</title>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --accent: #8bc34a;
+            --bg: #f1f8e9;
+        }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        h1 { color: var(--primary); text-align: center; }
+        .card { 
+            background: white; padding: 15px; border-radius: 12px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px;
+        }
+        input, button { 
+            width: 100%; padding: 12px; margin: 8px 0; 
+            border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;
+        }
+        button { 
+            background: var(--primary); color: white; border: none; 
+            font-weight: bold; cursor: pointer; 
+        }
+        button.rega-btn { background: var(--accent); margin-top: 10px; }
+        .planta-item { display: flex; justify-content: space-between; align-items: center; }
+        .info { flex-grow: 1; }
+    </style>
+</head>
+<body>
+
+    <h1>🌿 Minha Horta</h1>
+
+    <div class="card">
+        <h3>Nova Planta</h3>
+        <input type="text" id="nomePlanta" placeholder="Ex: Manjericão">
+        <button onclick="adicionarPlanta()">Adicionar à Horta</button>
+    </div>
+
+    <div id="listaPlantas"></div>
+
+    <script>
+        // 1. Configurar o Banco de Dados
+        const db = new Dexie("HortaDB");
+        db.version(1).stores({
+            plantas: '++id, nome, ultimaRega'
+        });
+
+        // 2. Função para Adicionar Planta
+        async function adicionarPlanta() {
+            const nomeInput = document.getElementById('nomePlanta');
+            if (!nomeInput.value) return alert("Digite um nome!");
+
+            await db.plantas.add({
+                nome: nomeInput.value,
+                ultimaRega: new Date().toLocaleString()
+            });
+
+            nomeInput.value = "";
+            renderizarPlantas();
+        }
+
+        // 3. Função para Atualizar Rega
+        async function regarPlanta(id) {
+            await db.plantas.update(id, { ultimaRega: new Date().toLocaleString() });
+            renderizarPlantas();
+        }
+
+        // 4. Função para Listar Plantas
+        async function renderizarPlantas() {
+            const listaDiv = document.getElementById('listaPlantas');
+            const plantas = await db.plantas.toArray();
+            
+            listaDiv.innerHTML = plantas.map(p => `
+                <div class="card">
+                    <div class="planta-item">
+                        <div class="info">
+                            <strong>${p.nome}</strong><br>
+                            <small>Última rega: ${p.ultimaRega}</small>
+                        </div>
+                        <button class="rega-btn" onclick="regarPlanta(${p.id})" style="width: auto;">💧 Regar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Inicializar a lista ao abrir
+        renderizarPlantas();
+    </script>
+</body>
+</html>

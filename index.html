@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Quinta Pro</title>
+    <title>Horta</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
 <header>
-    <input type="text" id="globalSearch" placeholder="🔎 Pesquisar na quinta..." onkeyup="filtrarTudo()">
+    <input type="text" id="globalSearch" placeholder="🔎 Pesquisar..." onkeyup="filtrarTudo()">
 </header>
 
 <main>
@@ -29,8 +29,8 @@
 
     <section id="page-wiki" class="page">
         <div class="flex-header">
-            <h2>📖 Minha Wiki</h2>
-            <button class="btn-main" onclick="abrirModal('modal-wiki')">+ Dica</button>
+            <h2>📖 Notas</h2>
+            <button class="btn-main" onclick="abrirModal('modal-wiki')">+ Nota</button>
         </div>
         <div id="wiki-render"></div>
     </section>
@@ -57,16 +57,16 @@
 <nav class="bottom-nav">
     <button class="nav-item active" onclick="irPara('horta', this)">🌿<span>Horta</span></button>
     <button class="nav-item" onclick="irPara('calendario', this)">📅<span>Colheita</span></button>
-    <button class="nav-item" onclick="irPara('wiki', this)">📖<span>Wiki</span></button>
-    <button class="nav-item" onclick="irPara('config', this)">⚙️<span>Ajustes</span></button>
+    <button class="nav-item" onclick="irPara('notas', this)">📖<span>Notas</span></button>
+    <button class="nav-item" onclick="irPara('config', this)">⚙️<span>Config</span></button>
 </nav>
 
 <div id="modal-planta" class="modal">
     <div class="modal-content">
-        <h3>🌱 Novo Plantio</h3>
+        <h3>🌱 Plantar</h3>
         <input type="text" id="p-nome" placeholder="Nome da Planta">
         <select id="p-zona-id"></select>
-        <input type="date" id="p-data" title="Data de Plantio">
+        <input type="date" id="p-data" title="Data de Plantio" placeholder="Data">
         <input type="number" id="p-ciclo" placeholder="Dias até colher (ex: 90)">
         <input type="file" id="p-foto" accept="image/*" capture="environment">
         <textarea id="p-notas" placeholder="Anotações..."></textarea>
@@ -79,8 +79,8 @@
 
 <div id="modal-wiki" class="modal">
     <div class="modal-content">
-        <h3>💡 Adicionar Dica</h3>
-        <input type="text" id="w-titulo" placeholder="Título do Truque">
+        <h3>💡 Adicionar Nota/Dica</h3>
+        <input type="text" id="w-titulo" placeholder="Título">
         <textarea id="w-texto" placeholder="Explicação detalhada..."></textarea>
         <div class="flex">
             <button class="btn-cancel" onclick="fecharModal('modal-wiki')">Cancelar</button>

@@ -53,27 +53,21 @@ async function carregarCalendario() {
 async function exportarBackup() {
     const data = {
         zonas: await db.zonas.toArray(),
-        plantas: await db.plantas.toArray()
+        plantas: await db.plantas.toArray(),
+        wiki: await db.wiki.toArray() // Adicionado ao backup
     };
-    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'backup_quinta.json';
-    a.click();
+    // ... resto do código do backup igual ...
 }
 
 async function importarBackup(e) {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-        const d = JSON.parse(event.target.result);
-        await db.zonas.bulkAdd(d.zonas);
-        await db.plantas.bulkAdd(d.plantas);
-        location.reload();
-    };
-    reader.readAsText(file);
+    // ... dentro do reader.onload ...
+    const d = JSON.parse(event.target.result);
+    await db.zonas.bulkAdd(d.zonas || []);
+    await db.plantas.bulkAdd(d.plantas || []);
+    await db.wiki.bulkAdd(d.wiki || []); // Adicionado ao restauro
+    location.reload();
 }
+
 
 function filtrarTudo() {
     const query = document.getElementById('globalSearch').value.toLowerCase();

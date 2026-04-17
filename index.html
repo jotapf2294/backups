@@ -27,9 +27,18 @@
     </section>
 
     <section id="page-wiki" class="page">
-        <h2>📖 Guia de Cultivo</h2>
-        <div id="wiki-render"></div>
+    <h2>📖 Notas</h2>
+    
+    <div class="card" style="border-left: 5px solid var(--a);">
+        <h3>➕ Nova Ficha/Truque</h3>
+        <input type="text" id="w-titulo" placeholder="Título (ex: Como podar Tomate)">
+        <textarea id="w-texto" placeholder="Escreve aqui o teu truque ou dica..."></textarea>
+        <button class="btn-main" onclick="addWiki()">Guardar na Wiki</button>
+    </div>
+
+    <div id="wiki-render"></div>
     </section>
+    
 
     <section id="page-config" class="page">
         <h2>⚙️ Definições</h2>
@@ -57,7 +66,7 @@
 
 <div id="modal" class="modal">
     <div class="modal-content">
-        <h3>🌱 Registar Plantio</h3>
+        <h3>🌱 Registar Planta</h3>
         <select id="p-tipo" onchange="sugerirWiki()">
             <option value="">Escolha a espécie...</option>
             <option value="Tomate">Tomate</option>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>JoAninha Raiz & Sabor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="modal-overlay"><div class="modal-box"><div id="modal-body"></div></div></div>
+    <main id="app-viewport"></main>
+    <nav>
+        <button onclick="Actions.nav('home')" class="nav-item" id="nav-home"><script>document.write(Icons.home)</script><span>INÍCIO</span></button>
+        <button onclick="Actions.nav('forum')" class="nav-item" id="nav-forum"><script>document.write(Icons.notes)</script><span>NOTAS</span></button>
+        <button onclick="Actions.nav('garden')" class="nav-item" id="nav-garden"><script>document.write(Icons.sprout)</script><span>HORTA</span></button>
+        <button onclick="Actions.nav('calendar')" class="nav-item" id="nav-calendar"><script>document.write(Icons.calendar)</script><span>AGENDA</span></button>
+        <button onclick="Actions.nav('config')" class="nav-item" id="nav-config"><script>document.write(Icons.settings)</script><span>CONFIG</span></button>
+    </nav>
+    <script src="app.js"></script>
+</body>
+</html>
